@@ -3,7 +3,7 @@ var app = angular.module('hackalist', []);
 app.controller('hackathonEvents', ['$http', '$scope', function($http, $scope){
   $scope.hackathons = [];
   $scope.applicable = function(hackathon) {
-    if (!$scope.travelReimbursements && !$scope.prizes && !$scope.highSchoolers && !$scope.cost) {
+    if (!$scope.travelReimbursements && !$scope.prizes && !$scope.highSchoolers && !$scope.cost && !$scope.available) {
       return true;
     }
 
@@ -23,11 +23,14 @@ app.controller('hackathonEvents', ['$http', '$scope', function($http, $scope){
       return false;
     }
 
+    if ($scope.available && dateChecker(hackathon.startDate)) {
+      return false;
+    }
+
     return true;
   }
 
   var today = new Date();
-
   var month = today.getMonth() + 1;
   var year = today.getFullYear();
 
@@ -88,4 +91,58 @@ function chunk(arr, size) {
   }
 
   return newArr;
+}
+
+function getMonthFromString(mon){
+
+   var d = Date.parse(mon + "1, 2000");
+   if(!isNaN(d)){
+      return new Date(d).getMonth() + 1;
+   }
+   return -1;
+}
+ 
+ function convertDate() {
+  function pad(s) { return (s < 10) ? '0' + s : s; }
+  var d = new Date();
+  return [pad(d.getMonth()+1), pad(d.getDate())];
+}
+ 
+ function naturalMatch(str) {
+    'use strict';
+    const arr = [];
+    const num_re = /^(\D+)?(\d+)?(.*)$/;
+    let s = str;
+    while (s) {
+        const match = s.match(num_re);
+        if (!match) {
+            break;
+        }
+        if (match[1]) {
+            arr.push(match[1]);
+        }
+        if (match[2]) {
+            arr.push(Number(match[2]));
+        }
+        s = match[3];
+    }
+    return arr;
+}
+
+function dateChecker(str){
+  var a = naturalMatch(str);
+  month_val = getMonthFromString(a[0]);
+  var cur_date = convertDate();
+
+  if (month_val > cur_date[0]){
+    return false;
+  }else if (month_val == cur_date[0]){
+    if (a[1]>=cur_date[1]){
+      return false;
+    }else{
+      return true;
+    }
+  }else{
+    return true;
+  }
 }
